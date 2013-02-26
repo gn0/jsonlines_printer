@@ -13,6 +13,8 @@ def format_for(*args):
         for type in args:
             globals()["_format_%s" % type.__name__] = function
 
+        return function
+
     return decorator
 
 
