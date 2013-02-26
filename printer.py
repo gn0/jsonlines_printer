@@ -97,3 +97,15 @@ def format_float(item):
 def format_none(item):
     return "None"
 
+
+if __name__ == "__main__":
+    import sys
+    import codecs
+    import locale
+    import fileinput
+
+    sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
+
+    for line in fileinput.input():
+        print format_json(line)
+
