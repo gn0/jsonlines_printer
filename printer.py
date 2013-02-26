@@ -51,8 +51,7 @@ def format_list(item):
 
     for v in item:
         retval += "    %s,\n" % indent_item(
-                                    format_item(
-                                        item.get(v)))
+                                    format_item(v))
 
     retval += "]"
 
