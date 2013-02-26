@@ -8,35 +8,27 @@ def format_json(string):
                 json.loads(string))
 
 
+def format_for(*args):
+    def decorator(function):
+        for type in args:
+            globals()["_format_%s" % type.__name__] = function
+
+    return decorator
+
+
 def format_item(item):
-    item_type = type(item)
-
-    if item_type == dict:
-        return format_dict(item)
-
-    if item_type == list:
-        return format_list(item)
-
-    if item_type in (str, unicode):
-        return format_string(item)
-
-    if item_type == int:
-        return format_int(item)
-
-    if item_type == float:
-        return format_float(item)
-
-    if item is None:
-        return format_none(item)
-
-    raise TypeError, "Item has unknown type: %s" % item_type
+    try:
+        return globals()["_format_%s" % type(item).__name__](item)
+    except KeyError:
+        raise TypeError, "Item has unrecognised type: %s" % type(item)
 
 
 def indent_item(string):
     return string.replace("\n", "\n    ")
 
 
-def format_dict(item):
+@format_for(dict)
+def format_dictionary(item):
     retval = "{\n"
 
     for k in item:
@@ -51,19 +43,21 @@ def format_dict(item):
     return retval
 
 
+@format_for(list)
 def format_list(item):
     retval = "[\n"
 
     for v in item:
         retval += "    %s,\n" % indent_item(
                                     format_item(
-                                        item.get(k)))
+                                        item.get(v)))
 
     retval += "]"
 
     return retval
 
 
+@format_for(str, unicode)
 def format_string(item):
     def is_multiline():
         return "\n" in item
@@ -86,14 +80,12 @@ def format_string(item):
         return inline_format()
 
 
-def format_int(item):
+@format_for(int, float)
+def format_number(item):
     return str(item)
 
 
-def format_float(item):
-    return str(item)
-
-
+@format_for(type(None))
 def format_none(item):
     return "None"
 
