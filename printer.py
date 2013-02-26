@@ -4,9 +4,8 @@ import json
 
 
 def format_json(string):
-    item = json.loads(string)
-
-    return format_item(item)
+    return format_item(
+                json.loads(string))
 
 
 def format_item(item):
@@ -33,19 +32,18 @@ def format_item(item):
     raise TypeError, "Item has unknown type: %s" % item_type
 
 
-def format_dict(item):
-    def indent_item(string):
-        return string.replace("\n", "\n    ")
+def indent_item(string):
+    return string.replace("\n", "\n    ")
 
+
+def format_dict(item):
     retval = "{\n"
 
     for k in item:
         retval += "    %s: " % format_item(k)
-
-        formatted_item = format_item(item[k])
-        formatted_item = indent_item(formatted_item)
-
-        retval += formatted_item
+        retval += indent_item(
+                    format_item(
+                        item.get(k)))
         retval += ",\n"
 
     retval += "}"
@@ -54,16 +52,12 @@ def format_dict(item):
 
 
 def format_list(item):
-    def indent_item(string):
-        return string.replace("\n", "\n    ")
-
     retval = "[\n"
 
     for v in item:
-        formatted_item = format_item(v)
-        formatted_item = indent_item(formatted_item)
-
-        retval += "    %s,\n" % formatted_item
+        retval += "    %s,\n" % indent_item(
+                                    format_item(
+                                        item.get(k)))
 
     retval += "]"
 
@@ -71,19 +65,25 @@ def format_list(item):
 
 
 def format_string(item):
-    if "\n" in item:
-        # Multiline
+    def is_multiline():
+        return "\n" in item
 
+    def multiline_format():
         retval = "\n"
         retval += "\"\"\"\n"
         retval += "%s\n" % item
         retval += "\"\"\""
 
-        retval = retval.replace("\n", "\n    ")
+        return indent_item(retval)
 
-        return retval
+    def inline_format():
+        return "\"%s\"" % (item.replace("\\", "\\\\")
+                               .replace("\"", "\\\""))
 
-    return "\"%s\"" % item.replace("\\", "\\\\").replace("\"", "\\\"")
+    if is_multiline():
+        return multiline_format()
+    else:
+        return inline_format()
 
 
 def format_int(item):
